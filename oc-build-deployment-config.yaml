@@ -1,0 +1,59 @@
+kind: Template
+apiVersion: v1
+metadata:
+  name: myspringboot
+objects:
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    name: myspringboot
+    labels:
+      build: myspringboot
+  spec: {}
+  status:
+    dockerImageRepository: ''
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    name: openjdk18-openshift
+    namespace: trekadvisor
+  spec:
+    lookupPolicy:
+      local: true
+    tags:
+      - name: latest
+        from:
+          kind: DockerImage
+          name: registry.redhat.io/redhat-openjdk-18/openjdk18-openshift
+        generation: 
+        importPolicy: {}
+        referencePolicy:
+          type: ''
+- kind: BuildConfig
+  apiVersion: v1
+  metadata:
+    labels:
+      build: myspringboot
+    name: myspringboot
+  spec:
+    failedBuildsHistoryLimit: 5
+    nodeSelector: null
+    output:
+      to:
+        kind: ImageStreamTag
+        name: 'myspringboot:latest'
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      binary: {}
+      type: Binary
+    strategy:
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: 'openjdk18-openshift:latest'
+          namespace: trekadvisor
+      type: Source
+    successfulBuildsHistoryLimit: 5
+  status: {}
